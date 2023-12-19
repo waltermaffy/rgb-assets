@@ -6,11 +6,20 @@ Use rgb-lib-python to create and manage RGB assets.
 
 Simple webapp using streamlit to create and manage RGB assets.
 
-## TODO
-- [ ] Create a RGB21 token in streamlit
-- [ ] Create a RGB20 token in streamlit
-- [ ] Generate multiple wallets 
+# HOW TO USE IT
 
+mint: 
+
+rgbassets mint -u <blinded_utxo> -token tokens/nft.yml
+
+0. Create a wallet giving a name. A file will be created in the folder wallets with the name of the wallet.
+
+1. Configure the nft data in the token configuration file. 
+
+
+# Mint a new token
+
+rgbassets mint -u blinded_utxo 
 
 ## Requirements
 Docker and docker compose are required to run this demo.

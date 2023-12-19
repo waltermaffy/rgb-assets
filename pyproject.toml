@@ -9,13 +9,16 @@ python = "^3.10"
 streamlit = "^1.16.0"
 fastapi = "^0.89.1"
 pytest = "^7.2.0"
-jupyterlab = "^3.5.2"
 rgb-lib = "^0.1.2"
 qrcode = "^7.3.1"
-matplotlib = "^3.6.2"
-
 [tool.poetry.dev-dependencies]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.scripts]
+mint = "rgb_assets.mint.main:main"
+cashu = "cashu.wallet.cli.cli:cli"
+wallet-test = "tests.test_wallet:test"

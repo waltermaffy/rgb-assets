@@ -7,12 +7,9 @@ _die() {
 }
 
 
-if which docker-compose >/dev/null; then
-    COMPOSE="docker-compose"
-elif docker compose >/dev/null; then
-    COMPOSE="docker compose"
-else
-    _die "could not locate docker compose command or plugin"
+COMPOSE="docker compose"
+if ! $COMPOSE >/dev/null; then
+    _die "could not call docker compose (hint: install docker compose plugin)"
 fi
 BCLI="$COMPOSE exec -T -u blits bitcoind bitcoin-cli -regtest"
 DATA_DIR="data"
@@ -25,6 +22,13 @@ start() {
     $COMPOSE down -v
     rm -fr $DATA_DIR
     mkdir -p $DATA_DIR
+    # see docker-compose.yml for the exposed ports
+    EXPOSED_PORTS=(3000 8888)
+    for port in "${EXPOSED_PORTS[@]}"; do
+        if [ -n "$(ss -HOlnt "sport = :$port")" ];then
+            _die "port $port is already bound, services can't be started"
+        fi
+    done
     $COMPOSE up -d
 
     # wait for bitcoind to be up
@@ -40,6 +44,12 @@ start() {
     until $COMPOSE logs electrs |grep -q 'finished full compaction'; do
         sleep 1
     done
+
+    # wait for proxy to have completed startup
+    until $COMPOSE logs proxy |grep -q 'App is running at http://localhost:3000'; do
+        sleep 1
+    done
+
 
     # wait for jupyter to have completed startup
     local jupyter_str='http://127.0.0.1:8888/lab?token='
@@ -65,11 +75,11 @@ fund() {
     local address="$1"
     [ -n "$1" ] || _die "destination address required"
     $BCLI -rpcwallet=miner sendtoaddress "$address" 1
-    mine 3
+    mine
 }
 
 mine() {
-    local blocks=3
+    local blocks=1
     [ -n "$1" ] && blocks="$1"
     $BCLI -rpcwallet=miner -generate "$blocks"
 }

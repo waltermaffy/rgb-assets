@@ -1,19 +1,13 @@
-FROM debian:bullseye
+FROM python:3.10-slim
+RUN apt-get update
+RUN apt-get install -y curl python3-dev autoconf 
+RUN curl -sSL https://install.python-poetry.org | python3 -
+ENV PATH="/root/.local/bin:$PATH"
+WORKDIR /app
+COPY pyproject.toml poetry.lock ./
+RUN poetry config virtualenvs.create false
+RUN poetry install --no-dev --no-root
+COPY . .
+EXPOSE 8501
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends libmagic1 gcc python3-dev python3-pip \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-ENV USER="jupyter"
-
-RUN adduser --disabled-login --gecos "$USER user" $USER
-
-WORKDIR /home/$USER
-USER $USER
-
-RUN python3 -m pip install --no-warn-script-location \
-    jupyterlab matplotlib python-magic qrcode rgb-lib==0.1.2
-
-COPY ./notebooks/rgb-lib.ipynb sample.png ./
-
-CMD ["/home/jupyter/.local/bin/jupyter-lab", "--ip=0.0.0.0"]
+CMD ["poetry", "run", "streamlit", "run", "webapp.py"]

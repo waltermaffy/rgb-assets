@@ -1,22 +1,33 @@
-version: '3.2'
+version: '3.7'
 
 services:
-  
   bitcoind:
-    image: registry.gitlab.com/hashbeam/docker/bitcoind:23.0
+    image: registry.gitlab.com/hashbeam/docker/bitcoind:25.0
     command: "-fallbackfee=0.0002"
     volumes:
       - ./data/bitcoin:/srv/app/.bitcoin
   electrs:
-    image: registry.gitlab.com/hashbeam/docker/electrs:0.9.9
+    image: registry.gitlab.com/hashbeam/docker/electrs:0.9.14
     volumes:
       - ./data/electrs:/srv/app/db
     depends_on:
       - bitcoind
-  jupyter:
-    image: rgb-lib-python-demo
-    build: .
+  proxy:
+    image: ghcr.io/grunch/rgb-proxy-server:0.2.0
     ports:
-      - 8888:8888
+      - 3000:3000
+  minter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8501:80501
+      - 3001:3001
     depends_on:
+      - proxy
       - electrs
+      - bitcoind
+
+networks:
+  default:
+    name: rgbnet  
