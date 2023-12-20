@@ -5,12 +5,14 @@ description = "A framework to issue RBG-21 non-fungible assets"
 authors = ["waltermaffy <walterm21@proton.me>"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.9.2"
 streamlit = "^1.16.0"
 fastapi = "^0.89.1"
 pytest = "^7.2.0"
-rgb-lib = "^0.1.2"
+rgb-lib = "^0.2.0"
 qrcode = "^7.3.1"
+python-dotenv = "^1.0.0"
+uvicorn = "^0.24.0"
 [tool.poetry.dev-dependencies]
 
 [build-system]
@@ -19,6 +21,5 @@ build-backend = "poetry.core.masonry.api"
 
 
 [tool.poetry.scripts]
-mint = "rgb_assets.mint.main:main"
-cashu = "cashu.wallet.cli.cli:cli"
+mint = "rgb_assets.minter:main"
 wallet-test = "tests.test_wallet:test"

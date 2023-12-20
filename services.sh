@@ -15,7 +15,7 @@ BCLI="$COMPOSE exec -T -u blits bitcoind bitcoin-cli -regtest"
 DATA_DIR="data"
 
 build() {
-    $COMPOSE build jupyter
+    $COMPOSE build minter
 }
 
 start() {
@@ -50,20 +50,6 @@ start() {
         sleep 1
     done
 
-
-    # wait for jupyter to have completed startup
-    local jupyter_str='http://127.0.0.1:8888/lab?token='
-    until $COMPOSE logs jupyter |grep -q "$jupyter_str"; do
-        sleep 1
-    done
-    local link
-    link=$($COMPOSE logs jupyter \
-        |grep "${jupyter_str}" |tail -1 |awk '{print $NF}')
-
-    echo
-    echo "open jupyter by pointing a browser to the following link:"
-    # insert notebook path and show link in console
-    echo "${link//\?/\/tree\/rgb-lib.ipynb?}"
 }
 
 stop() {

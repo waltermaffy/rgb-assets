@@ -5,7 +5,7 @@ import os
 
 import rgb_lib
 
-from rgb_assets.config import WalletConfig, get_config
+from rgb_assets.config import WalletConfig, get_config, SUPPORTED_NETWORKS
 from rgb_assets.wallet_helper import generate_or_load_keys
 
 
@@ -29,23 +29,25 @@ class NftMintingService:
             self.cfg.vanilla_keychain,
         )
         self.wallet = rgb_lib.Wallet(wallet_data)
+        print(f"Electrum server: {self.cfg.electrum_url}")
         self.online = self.wallet.go_online(False, self.cfg.electrum_url)
         logging.info(f"Wallet initialized!")
 
     def _set_network(self, network: str) -> rgb_lib.BitcoinNetwork:
-        supported_networks = {
-            "regtest": rgb_lib.BitcoinNetwork.REGTEST,
-            "testnet": rgb_lib.BitcoinNetwork.TESTNET,
-        }
-        if network not in supported_networks:
+        if network not in SUPPORTED_NETWORKS:
             raise Exception(f"Network {network} not supported.")
-        return supported_networks[network]
+        return SUPPORTED_NETWORKS[network]
 
     def create_new_utxos(self, amount: int):
         self.wallet.create_utxos(self.online, True, amount, None, self.cfg.fee_rate)
 
     def get_receiving_address(self):
         return self.wallet.get_address()
+
+    def get_mints(self):
+        assets = self.wallet.list_assets(filter_asset_schemas=[])
+        return assets.cfa
+
 
     def mint_nft(self, definition_file: str) -> str:
 
@@ -110,7 +112,7 @@ def main():
         "--data-dir",
         "-dir",
         type=str,
-        default="./wallet_data",
+        default="./data",
         help="Directory to store wallet data",
     )
     parser.add_argument(
@@ -122,8 +124,13 @@ def main():
         help="Bitcoin network type",
     )
     args = parser.parse_args()
-
+    print(args)
     cfg = get_config()
+    
+    cfg.data_dir = args.data_dir
+    cfg.definition = args.definition
+    print(cfg)
+
     mint_service = NftMintingService(cfg)
 
     try:
@@ -131,8 +138,8 @@ def main():
         asset_id = mint_service.mint_nft(args.definition)
         print(f"NFT minted with asset ID: {asset_id}")
         # send nft to blinded utxo
-        tx_id = mint_service.send_nft(args.blinded_utxo, asset_id)
-        print(f"NFT sent with txid: {tx_id}")
+        # tx_id = mint_service.send_nft(args.blinded_utxo, asset_id)
+        # print(f"NFT sent with txid: {tx_id}")
 
     except Exception as e:
         print(f"Error: {e}")

@@ -3,14 +3,13 @@ import logging
 import os
 
 import rgb_lib
-
-SUPPORTED_NETWORKS = [rgb_lib.BitcoinNetwork.REGTEST, rgb_lib.BitcoinNetwork.TESTNET]
+from rgb_assets.config import  SUPPORTED_NETWORKS
 
 
 def generate_or_load_keys(
     wallet_path: str, network: rgb_lib.BitcoinNetwork
 ) -> rgb_lib.Keys:
-    if network not in SUPPORTED_NETWORKS:
+    if network not in [v for v in SUPPORTED_NETWORKS.values()]:
         raise Exception(f"Network {network} not supported.")
 
     if not os.path.exists(wallet_path):
@@ -51,14 +50,14 @@ def export_keys(wallet_path: str, keys: rgb_lib.Keys):
 
     with open(wallet_path, "w") as file:
         json.dump(
-            {
-                "mnemonic": keys.mnemonic,
-                "xpub": keys.xpub,
-                "xpub_fingerprint": keys.xpub_fingerprint,
-            },
-            file,
-            indent=4,
-        )
+        {
+            "mnemonic": keys.mnemonic,
+            "xpub": keys.xpub,
+            "xpub_fingerprint": keys.xpub_fingerprint,
+        },
+        file,
+        indent=4,
+    )
 
 
 if __name__ == "__main__":

@@ -20,9 +20,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart:
+      always
     ports:
-      - 8501:80501
-      - 3001:3001
+      - 8000:8000
+    volumes: 
+      -  ./:/app
     depends_on:
       - proxy
       - electrs
