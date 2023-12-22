@@ -1,8 +1,10 @@
 import rgb_lib
+
 from rgb_assets.config import WalletConfig
 from rgb_assets.wallet_helper import generate_or_load_wallet, setup_logger
 
 logger = setup_logger("./data/logfile.log")
+
 
 class WalletService:
     def __init__(self, cfg: WalletConfig):
@@ -31,11 +33,13 @@ class WalletService:
     def get_new_blinded_utxo(self):
         try:
             self.create_new_utxos(1)
-            blind_data = self.wallet.blind_receive(None, None, None, self.cfg.transport_endpoints, 1)        
+            blind_data = self.wallet.blind_receive(
+                None, None, None, self.cfg.transport_endpoints, 1
+            )
             logger.info(f"New blinded utxo: {blind_data}")
             return blind_data.recipient_id
         except rgb_lib.RgbLibError as err:  # pylint: disable=catching-non-exception
-            print(f'Error generating blind data: {err}')
+            print(f"Error generating blind data: {err}")
             logger.error(err)
             return None
 

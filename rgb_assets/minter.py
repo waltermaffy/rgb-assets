@@ -1,15 +1,17 @@
 import argparse
 import json
 import os
-import rgb_lib
 from typing import Union
-from rgb_assets.models import NftDefinition, NftMint
-from rgb_assets.config import WalletConfig, get_config, SUPPORTED_NETWORKS
+
+import rgb_lib
+
+from rgb_assets.config import SUPPORTED_NETWORKS, WalletConfig, get_config
+from rgb_assets.models import DataConverter, NftDefinition, NftMint
 from rgb_assets.wallet_helper import generate_or_load_wallet, setup_logger
 from rgb_assets.wallet_service import WalletService
 
-
 logger = setup_logger("./data/minter.log")
+
 
 class NftMintingService(WalletService):
     def __init__(self, cfg: WalletConfig):
@@ -21,7 +23,7 @@ class NftMintingService(WalletService):
 
     def load_nft_definition_from_file(file_path: str) -> Union[NftDefinition, None]:
         try:
-            with open(file_path, 'r') as file:
+            with open(file_path, "r") as file:
                 json_data = json.load(file)
                 return NftDefinition.parse_obj(json_data)
         except FileNotFoundError:
@@ -30,10 +32,18 @@ class NftMintingService(WalletService):
         except json.JSONDecodeError as e:
             logger.error(f"Error decoding JSON: {e}")
             return None
-            
+
     def mint_nft(self, nft_definition: NftDefinition) -> str:
         try:
             logger.info(f"Got NFT definition: {nft_definition}")
+            encoded_data = nft_definition.encoded_data
+            if encoded_data:
+                file_path = DataConverter.decode_data(
+                    encoded_data, nft_definition.file_type, self.cfg.data_dir
+                )
+                if file_path:
+                    nft_definition.file_path = file_path
+
             # Create a new UTXO to hold the NFT
             self.create_new_utxos(1)
             logger.info("Created a new utxo for the NFT created")
@@ -49,9 +59,9 @@ class NftMintingService(WalletService):
             logger.info(f"Issued asset with ID: {cfa_asset.asset_id}")
             return cfa_asset.asset_id
         except Exception as e:
-                logger.error(e)
-                raise Exception(e)
-    
+            logger.error(e)
+            raise Exception(e)
+
     def send_nft(
         self,
         blinded_utxo: str,
@@ -59,7 +69,6 @@ class NftMintingService(WalletService):
         amount_sat: int = 1000,
         amount_cfa: int = 1,
     ):
-
         # Sending the newly minted NFT to the blinded UTXO
         recipient_map_cfa = {
             asset_id: [
@@ -75,6 +84,7 @@ class NftMintingService(WalletService):
             f"Sent a CFA token with txid: {txid} to blinded UTXO: {blinded_utxo}"
         )
         return txid
+
 
 def main():
     parser = argparse.ArgumentParser(description="NFT Minting Service")
@@ -102,7 +112,7 @@ def main():
     args = parser.parse_args()
     print(args)
     cfg = get_config()
-    
+
     cfg.data_dir = args.data_dir
     cfg.definition = args.definition
     print(cfg)

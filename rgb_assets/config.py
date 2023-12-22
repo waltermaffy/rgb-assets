@@ -1,16 +1,20 @@
-import rgb_lib
-from dotenv import load_dotenv
+import os
+import sys
 from dataclasses import dataclass, field
 from typing import List
-import os, sys
+
+import rgb_lib
+from dotenv import load_dotenv
 
 SUPPORTED_NETWORKS = {
     "regtest": rgb_lib.BitcoinNetwork.REGTEST,
     "testnet": rgb_lib.BitcoinNetwork.TESTNET,
 }
 
+
 def default_transport_endpoints():
     return os.getenv("TRANSPORT_ENDPOINTS", "rpc://proxy:3000/json-rpc").split(",")
+
 
 @dataclass
 class WalletConfig:
@@ -26,14 +30,13 @@ class WalletConfig:
     vanilla_keychain: int = int(os.getenv("VANILLA_KEYCHAIN", "1"))
     log_path: str = os.getenv("LOG_PATH", "/data/minter.log")
 
-    
+
 def get_config():
     load_dotenv()
     return WalletConfig()
 
 
 def check_config(cfg: WalletConfig):
-
     if cfg.network not in SUPPORTED_NETWORKS:
         print(f"Network not supported")
         sys.exit(1)

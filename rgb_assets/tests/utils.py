@@ -1,5 +1,6 @@
-import os 
-from rgb_assets.config import  WalletConfig
+import os
+
+from rgb_assets.config import WalletConfig
 
 
 def get_test_config():
@@ -13,8 +14,9 @@ def get_test_config():
         transport_endpoints=["rpc://localhost:3000/json-rpc"],
         fee_rate=1.5,
         vanilla_keychain=1,
-        log_path="./data/test.log"
+        log_path="./data/test.log",
     )
+
 
 def fund_wallet(wallet):
     try:

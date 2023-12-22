@@ -3,7 +3,8 @@ import logging
 import os
 
 import rgb_lib
-from rgb_assets.config import  SUPPORTED_NETWORKS, WalletConfig, check_config
+
+from rgb_assets.config import SUPPORTED_NETWORKS, WalletConfig, check_config
 
 
 def setup_logger(file_path: str = "app.log") -> logging.Logger:
@@ -16,7 +17,9 @@ def setup_logger(file_path: str = "app.log") -> logging.Logger:
     file_handler.setLevel(logging.DEBUG)
 
     # Create a formatter and set it to the file handler
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
     file_handler.setFormatter(formatter)
 
     # Add the file handler to the logger
@@ -25,8 +28,7 @@ def setup_logger(file_path: str = "app.log") -> logging.Logger:
     return logger
 
 
-def generate_or_load_wallet(cfg: WalletConfig): 
-
+def generate_or_load_wallet(cfg: WalletConfig):
     check_config(cfg)
 
     if not hasattr(rgb_lib.BitcoinNetwork, cfg.network.upper()):
@@ -37,22 +39,22 @@ def generate_or_load_wallet(cfg: WalletConfig):
     if cfg.init:
         print("Initializing new wallet")
         keys = generate_new_keys(cfg.keys_path, bitcoin_network)
-    else:    
+    else:
         # Load existing wallet
         print("Loading existing wallet..")
         keys = load_keys(cfg.keys_path, bitcoin_network)
         rgb_lib.restore_backup(cfg.backup_path, cfg.backup_pass, cfg.data_dir)
-        print('restore complete')
+        print("restore complete")
 
     wallet_data = rgb_lib.WalletData(
-            cfg.data_dir,
-            bitcoin_network,
-            rgb_lib.DatabaseType.SQLITE,
-            1,
-            keys.xpub,
-            keys.mnemonic,
-            cfg.vanilla_keychain,
-        )
+        cfg.data_dir,
+        bitcoin_network,
+        rgb_lib.DatabaseType.SQLITE,
+        1,
+        keys.xpub,
+        keys.mnemonic,
+        cfg.vanilla_keychain,
+    )
     wallet = rgb_lib.Wallet(wallet_data)
     print(cfg.electrum_url)
     online = wallet.go_online(False, cfg.electrum_url)
@@ -61,10 +63,9 @@ def generate_or_load_wallet(cfg: WalletConfig):
         wallet.backup(cfg.backup_path, cfg.backup_pass)
         print(f"Wallet backuped to {cfg.backup_path}")
     return wallet, online
-    
+
 
 def load_keys(keys_path: str, network: rgb_lib.BitcoinNetwork) -> rgb_lib.Keys:
-
     if not os.path.exists(keys_path):
         raise FileExistsError("Keys not found")
     try:
@@ -81,9 +82,7 @@ def load_keys(keys_path: str, network: rgb_lib.BitcoinNetwork) -> rgb_lib.Keys:
     return rgb_lib.restore_keys(network, mnemonic)
 
 
-def generate_new_keys(
-    keys_path: str, network: rgb_lib.BitcoinNetwork
-) -> rgb_lib.Keys:
+def generate_new_keys(keys_path: str, network: rgb_lib.BitcoinNetwork) -> rgb_lib.Keys:
     keys = rgb_lib.generate_keys(network)
     log_keys(keys)
     export_keys(keys_path, keys)
@@ -103,11 +102,11 @@ def export_keys(keys_path: str, keys: rgb_lib.Keys):
 
     with open(keys_path, "w") as file:
         json.dump(
-        {
-            "mnemonic": keys.mnemonic,
-            "xpub": keys.xpub,
-            "xpub_fingerprint": keys.xpub_fingerprint,
-        },
-        file,
-        indent=4,
-    )
+            {
+                "mnemonic": keys.mnemonic,
+                "xpub": keys.xpub,
+                "xpub_fingerprint": keys.xpub_fingerprint,
+            },
+            file,
+            indent=4,
+        )

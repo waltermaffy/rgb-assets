@@ -1,13 +1,17 @@
 import streamlit as st
+
+from rgb_assets.client import NftClient
 from rgb_assets.config import WalletConfig
 from rgb_assets.wallet_helper import generate_or_load_wallet, setup_logger
-from rgb_assets.client import NftClient
+
 
 def main():
     st.title("NFT Client")
 
     if "nft_client" not in st.session_state:
-        cfg = WalletConfig()  # Initialize the WalletConfig with default values or set through environment variables
+        cfg = (
+            WalletConfig()
+        )  # Initialize the WalletConfig with default values or set through environment variables
         cfg.wallet_name = "nft_client"
         st.session_state.nft_client = NftClient(cfg)
 
@@ -25,7 +29,6 @@ def main():
     if st.button("List Wallet Assets"):
         assets = st.session_state.nft_client.get_assets()
         st.write(f"Wallet Assets: {assets}")
-
 
 
 if __name__ == "__main__":
