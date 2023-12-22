@@ -1,25 +1,35 @@
 import pytest
-from unittest.mock import MagicMock, patch
+import rgb_lib
+import pytest 
+from rgb_assets.tests.utils import fund_wallet
+
 from rgb_assets.minter import NftMintingService
 
-@pytest.fixture
-def mock_wallet():
-    return MagicMock()
 
-@pytest.fixture
-def nft_minting_service(mock_wallet):
-    with patch('rgb_assets.minter.generate_or_load_wallet') as mock_generate_or_load_wallet:
-        mock_generate_or_load_wallet.return_value = (mock_wallet, True)
-        yield NftMintingService()
+def test_mint_from_file(minter):
+    pass 
 
-def test_create_new_utxos(nft_minting_service, mock_wallet):
-    nft_minting_service.create_new_utxos(1)
-    mock_wallet.create_utxos.assert_called_once_with(True, 1, None, nft_minting_service.cfg.fee_rate)
 
-def test_get_new_blinded_utxo(nft_minting_service, mock_wallet):
-    mock_wallet.blind_receive.return_value = MagicMock(recipient_id="123abc")
-    result = nft_minting_service.get_new_blinded_utxo()
-    assert result == "123abc"
-    mock_wallet.blind_receive.assert_called_once_with(None, None, None, nft_minting_service.cfg.transport_endpoints, 1)
+def test_mint(minter, nft_demo):
+    # Test the mint a CFA asset
+    fund_wallet(minter)
+    assets = minter.get_cfa_assets()
+    # There should be no assets yet
+    assert len(assets) == 0 
+    asset_id = minter.mint_nft(nft_demo)
+    assets = minter.get_cfa_assets()
+    assert len(assets) > 0 
+    assert asset_id is not None 
+    assert type(asset_id) == str
+    assert asset_id.startswith("rgb:")
 
-# Add more tests for other methods as needed...
+
+def test_send_nft(minter, nft_demo):
+    # Mint a CFA asset and try to send it to a new utxob
+    fund_wallet(minter)
+    blinded_utxo = minter.get_new_blinded_utxo()
+    asset_id = minter.mint_nft(nft_demo)
+    txid = minter.send_nft(blinded_utxo, asset_id)
+    assert txid is not None 
+    assert type(txid) == str
+ 
