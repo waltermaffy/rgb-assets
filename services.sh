@@ -12,6 +12,8 @@ if ! $COMPOSE >/dev/null; then
     _die "could not call docker compose (hint: install docker compose plugin)"
 fi
 BCLI="$COMPOSE exec -T -u blits bitcoind bitcoin-cli -regtest"
+RUN_STREAMLIT="$COMPOSE exec minter poetry run streamlit run streamlit_page.py"
+
 DATA_DIR="data"
 
 build() {
@@ -57,6 +59,10 @@ stop() {
     rm -fr $DATA_DIR
 }
 
+streamlit() {
+    $RUN_STREAMLIT
+}
+
 fund() {
     local address="$1"
     [ -n "$1" ] || _die "destination address required"
@@ -72,7 +78,7 @@ mine() {
 
 [ -n "$1" ] || _die "command required"
 case $1 in
-    build|start|stop) "$1";;
+    build|start|stop|streamlit) "$1";;
     fund|mine) "$@";;
     *) _die "unrecognized command";;
 esac

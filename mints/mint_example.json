@@ -4,5 +4,5 @@
     "amounts": [1],
     "description": "A new incredible collectible",
     "parent_id": null,
-    "file_path": "sample.png"
+    "file_path": null
 }

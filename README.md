@@ -1,10 +1,41 @@
-# RGB Assets 
+# RGB Assets 
 
-A framework for issuing and transferring assets on top of the Bitcoin using client-side validation.
+A framework for issuing and transferring [RGB](rgb.info) assets.
 
 Use rgb-lib-python to create and manage RGB assets.
 
-Simple webapp using streamlit to create and manage RGB assets.
+The library provide a NFT Minter that by creating or loading a RGB wallet can allow mint of new NFT/RGB121/CFA rgb assets 
+
+
+Features:
+- FastAPI app
+- CLI interface for minter, client 
+
+## Requirements
+Docker and docker compose are required to run this demo.
+
+
+## Configuration
+In order to provide your conf you can create a default .env file
+
+mv .env.example .env
+
+Modify it with your needs.
+
+### Wallet Settings
+If the following are not provided, a new wallet will be created. 
+
+If you want to load an existing wallet provide in .env :
+- WALLET_NAME.backup file inside DATA_DIR
+- WALLET_NAME_keys.json file inside DATA_DIR, with this structure:
+{
+    "mnemonic": keys.mnemonic,
+    "xpub": keys.xpub,
+    "xpub_fingerprint": keys.xpub_fingerprint,
+}
+- password of the wallet backup in PASSWORD_BACKUP
+
+In the future the keys file may be encryped with PASSWORD_BACKUP
 
 # HOW TO USE IT
 
@@ -21,8 +52,6 @@ rgbassets mint -u <blinded_utxo> -token tokens/nft.yml
 
 rgbassets mint -u blinded_utxo 
 
-## Requirements
-Docker and docker compose are required to run this demo.
 
 
 ## Jupyter demo

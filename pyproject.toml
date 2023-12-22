@@ -22,4 +22,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 mint = "rgb_assets.minter:main"
-wallet-test = "tests.test_wallet:test"
+wallet-helper = "rgb_assets.wallet_helper:main"

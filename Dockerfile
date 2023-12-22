@@ -12,4 +12,4 @@ RUN poetry install --no-dev --no-root
 COPY . .
 EXPOSE 8000
 
-CMD ["poetry", "run", "python", "-m", "uvicorn", "rgb_assets.api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["poetry", "run", "python", "-m", "uvicorn", "rgb_assets.api:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]

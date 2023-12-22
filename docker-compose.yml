@@ -8,6 +8,8 @@ services:
       - ./data/bitcoin:/srv/app/.bitcoin
   electrs:
     image: registry.gitlab.com/hashbeam/docker/electrs:0.9.14
+    ports:
+      - 50001:50001
     volumes:
       - ./data/electrs:/srv/app/db
     depends_on:
@@ -24,13 +26,10 @@ services:
       always
     ports:
       - 8000:8000
+      - 8501:8501
     volumes: 
       -  ./:/app
     depends_on:
       - proxy
       - electrs
       - bitcoind
-
-networks:
-  default:
-    name: rgbnet  
