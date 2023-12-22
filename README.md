@@ -33,9 +33,9 @@ If you want to load an existing wallet provide in .env :
     "xpub": keys.xpub,
     "xpub_fingerprint": keys.xpub_fingerprint,
 }
-- password of the wallet backup in PASSWORD_BACKUP
+- password of the wallet backup in BACKUP_PASS
 
-In the future the keys file may be encryped with PASSWORD_BACKUP
+In the future the keys file may be encryped with BACKUP_PASS
 
 # HOW TO USE IT
 
@@ -53,8 +53,7 @@ rgbassets mint -u <blinded_utxo> -token tokens/nft.yml
 rgbassets mint -u blinded_utxo 
 
 
-
-## Jupyter demo
+## Testing setup
 Build the jupyter docker image with:
 ```shell
 ./services.sh build
@@ -94,3 +93,10 @@ it can be deleted with:
 ```shell
 docker image rm rgb-lib-python-demo
 ```
+
+## Possible future improvements
+- [ ] Add a database (SQLite/Mongo)
+- [ ] Refined error hanlding
+- [ ] Request Validation
+- [ ] Add response model for consistent output
+

@@ -15,9 +15,10 @@ def default_transport_endpoints():
 @dataclass
 class WalletConfig:
     network: str = os.getenv("NET", "regtest")
+    init: bool = os.getenv("INIT", False)
     wallet_name: str = os.getenv("WALLET_NAME", "rgb_wallet")
     data_dir: str = os.getenv("DATA_DIR", "./data/wallet")
-    backup_pass = os.getenv("BACKUP_PASS", "password")
+    backup_pass: str = os.getenv("BACKUP_PASS", "password")
     electrum_url: str = os.getenv("ELECTRUM_URL", "tcp://electrs:50001")
     proxy_url: str = os.getenv("PROXY_URL", "https://proxy.rgbtools.org")
     transport_endpoints: List[str] = field(default_factory=default_transport_endpoints)

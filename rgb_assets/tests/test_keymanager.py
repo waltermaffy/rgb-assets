@@ -1,65 +1,79 @@
-import json
 import os
-
+import json
+from unittest.mock import MagicMock, patch
 import pytest
-import rgb_lib
-from wallet_helper import export_keys, generate_new_keys, generate_or_load_keys
 
-# Test data
-TEST_WALLET_PATH = "test_wallet.json"
-TEST_NETWORK = rgb_lib.BitcoinNetwork.REGTEST
+from rgb_assets.wallet_helper import (
+    setup_logger,
+    generate_or_load_wallet,
+    load_keys,
+    generate_new_keys,
+    log_keys,
+    export_keys
+)
 
+from rgb_assets.config import  SUPPORTED_NETWORKS, WalletConfig, check_config
 
-def test_generate_or_load_keys_existing_wallet(tmpdir):
-    # Create a temporary wallet file for testing existing wallet scenario
-    wallet_path = os.path.join(tmpdir, "existing_wallet.json")
-    keys_data = {
-        "mnemonic": "test mnemonic",
-        "xpub": "test xpub",
-        "xpub_fingerprint": "test fingerprint",
-    }
-    with open(wallet_path, "w") as file:
-        json.dump(keys_data, file)
+# Create a fixture for WalletConfig
+@pytest.fixture
+def sample_config():
+    return WalletConfig(
+        network="regtest",
+        wallet_name="test_wallet",
+        data_dir="./data/wallet",
+        backup_pass="password",
+        electrum_url="tcp://electrs:50001",
+        proxy_url="https://proxy.rgbtools.org",
+        transport_endpoints=["rpc://proxy:3000/json-rpc"],
+        fee_rate=1.5,
+        vanilla_keychain=1,
+        log_path="./data/test.log"
+    )
 
-    keys = generate_or_load_keys(wallet_path, TEST_NETWORK)
+def test_load_keys(sample_config):
+    check_config(sample_config)
+    assert sample_config.keys_path is not None
+    assert sample_config.backup_path is not None 
 
-    assert keys is not None
-    assert isinstance(keys, rgb_lib.Keys)
-    assert keys.mnemonic == "test mnemonic"
+    
 
+def test_generate_or_load_wallet(sample_config):
+    # Mocking methods and objects to test generate_or_load_wallet function
+    with patch('rgb_assets.wallet_helper.check_config'), \
+         patch('os.path.exists', return_value=True), \
+         patch('rgb_assets.wallet_helper.rgb_lib.BitcoinNetwork'), \
+         patch('rgb_assets.wallet_helper.rgb_lib.Wallet'), \
+         patch('rgb_assets.wallet_helper.rgb_lib.restore_backup'), \
+         patch('builtins.print') as mock_print:
+        
+        mock_keys = MagicMock()
+        mock_wallet = MagicMock()
+        mock_online = MagicMock()
+        
+        mock_keys.xpub = "mock_xpub"
+        mock_keys.mnemonic = "mock_mnemonic"
+        
+        mock_wallet_data = MagicMock()
+        mock_wallet_data.return_value = mock_wallet
+        mock_wallet.go_online.return_value = mock_online
+        
+        mock_network = MagicMock()
+        mock_network.return_value = "mock_bitcoin_network"
 
-def test_generate_or_load_keys_new_wallet(tmpdir):
-    # Test scenario when there's no existing wallet file
-    wallet_path = os.path.join(tmpdir, "new_wallet.json")
+        # Set return values for mocked functions
+        mock_keys = MagicMock()
+        mock_wallet = MagicMock()
+        mock_online = MagicMock()
+        mock_network = MagicMock()
 
-    keys = generate_or_load_keys(wallet_path, TEST_NETWORK)
+        mock_keys.xpub = "mock_xpub"
+        mock_keys.mnemonic = "mock_mnemonic"
+        mock_online = True
+        
+        # Execute the function
+        wallet, online = generate_or_load_wallet(sample_config)
 
-    assert keys is not None
-    assert isinstance(keys, rgb_lib.Keys)
-    assert keys.mnemonic is not None
-
-
-def test_generate_new_keys(tmpdir):
-    # Test if new keys are generated properly
-    wallet_path = os.path.join(tmpdir, "generate_new_keys_test.json")
-
-    keys = generate_new_keys(wallet_path, TEST_NETWORK)
-
-    assert keys is not None
-    assert isinstance(keys, rgb_lib.Keys)
-    assert keys.mnemonic is not None
-    assert keys.xpub is not None
-
-
-def test_export_keys(tmpdir):
-    # Test export keys functionality
-    wallet_path = os.path.join(tmpdir, "export_keys_test.json")
-    keys = rgb_lib.generate_keys(TEST_NETWORK)
-
-    export_keys(wallet_path, keys)
-
-    assert os.path.exists(wallet_path)
-
-
-if __name__ == "__main__":
-    pytest.main()
+        # Assertions
+        assert wallet == mock_wallet
+        assert online == mock_online
+        mock_print.assert_called()

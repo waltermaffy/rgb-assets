@@ -71,12 +71,10 @@ async def mint_nft(definition: NftDefinition):
 async def send_nft(mint_request: MintRequest):
     try:
         tx_id = mint_service.send_nft(mint_request.blinded_utxo, mint_request.asset_id)
-    return {
-        "message": "NFT sent",
-        "tx_id": tx_id
-    }
+        return {
+            "message": "NFT sent",
+            "tx_id": tx_id
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
-if __name__ == "__main__":
-    import uvicorn
