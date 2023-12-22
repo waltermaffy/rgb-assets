@@ -6,42 +6,18 @@ from typing import Union
 from rgb_assets.models import NftDefinition, NftMint
 from rgb_assets.config import WalletConfig, get_config, SUPPORTED_NETWORKS
 from rgb_assets.wallet_helper import generate_or_load_wallet, setup_logger
+from rgb_assets.wallet_service import WalletService
+
 
 logger = setup_logger("./data/minter.log")
 
-
-class NftMintingService:
+class NftMintingService(WalletService):
     def __init__(self, cfg: WalletConfig):
-        self.cfg = cfg
-        self.wallet, self.online = generate_or_load_wallet(cfg)
-
-    def create_new_utxos(self, amount: int):
-        self.wallet.create_utxos(self.online, True, amount, None, self.cfg.fee_rate)
-        logger.info(f"Create {amount} new utxos")
-
-    def get_new_blinded_utxo(self):
-        try:
-            self.create_new_utxos(1)
-            data = self.wallet.blind_receive(None, None, None, self.cfg.transport_endpoints, 1)        
-            logger.info(f"New blinded utxo: {data}")
-            return data.recipient_id
-        except Exception as e:
-            logger.error(e)
-            raise Exception(e)
-
-    def get_receiving_address(self):
-        return self.wallet.get_address()
-
-    def get_assets(self):
-        assets = self.wallet.list_assets(filter_asset_schemas=[])
-        return assets.cfa
+        super().__init__(cfg)
 
     def mint_nft_from_file(self, file_path: str) -> str:
         nft_definition = self.load_nft_definition_from_file(file_path)
         return self.mint_nft(nft_definition)
-
-    def list_unspent(self):
-        return self.wallet.list_unspents(self.online, settled_only=False)
 
     def load_nft_definition_from_file(file_path: str) -> Union[NftDefinition, None]:
         try:
@@ -60,7 +36,7 @@ class NftMintingService:
             logger.info(f"Got NFT definition: {nft_definition}")
             # Create a new UTXO to hold the NFT
             self.create_new_utxos(1)
-            logger.info("New utxo created")
+            logger.info("Created a new utxo for the NFT created")
             # issue the asset
             cfa_asset = self.wallet.issue_asset_cfa(
                 self.online,
@@ -70,15 +46,12 @@ class NftMintingService:
                 nft_definition.amounts,
                 nft_definition.file_path,
             )
-            logger.info(f"issued asset with ID: {cfa_asset.asset_id}")
+            logger.info(f"Issued asset with ID: {cfa_asset.asset_id}")
             return cfa_asset.asset_id
         except Exception as e:
                 logger.error(e)
                 raise Exception(e)
     
-    def refresh(self):
-        self.wallet.refresh(self.online, None, [])
-
     def send_nft(
         self,
         blinded_utxo: str,
@@ -88,8 +61,6 @@ class NftMintingService:
     ):
 
         # Sending the newly minted NFT to the blinded UTXO
-        script_data = rgb_lib.ScriptData(blinded_utxo, amount_sat, None)
-        logger.debug(f"ScriptData: {script_data}")
         recipient_map_cfa = {
             asset_id: [
                 rgb_lib.Recipient(
@@ -97,7 +68,6 @@ class NftMintingService:
                 ),
             ]
         }
-        logger.debug(f"{recipient_map_cfa}")
         txid = self.wallet.send(
             self.online, recipient_map_cfa, False, self.cfg.fee_rate, 1
         )

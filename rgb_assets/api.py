@@ -21,18 +21,18 @@ async def refresh():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
         
-@app.get("/assets/")
-async def get_assets():
+@app.get("/cfa_assets/")
+async def get_cfa_assets():
     try:
-        mints = mint_service.get_assets()
+        mints = mint_service.get_cfa_assets()
         return {"mints": mints}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
 @app.get("/new_address/")
-async def get_new_address():
+async def get_address():
     try:
-        address = mint_service.get_receiving_address()
+        address = mint_service.get_address()
         return {"address": address}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
@@ -52,7 +52,6 @@ async def list_unspent():
         return {"unspents": unspents}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
-
 
 
 @app.post("/mint_nft/")

@@ -1,53 +1,17 @@
 from rgb_assets.models import NftDefinition
 from rgb_assets.config import WalletConfig
 from rgb_assets.wallet_helper import generate_or_load_wallet, setup_logger
+from rgb_assets.wallet_service import WalletService
 import argparse
 
 logger = setup_logger("./data/client.log")
 
-class NftClient:
+class NftClient(WalletService):
     def __init__(self, cfg: WalletConfig):
-        self.cfg = cfg
-        self.wallet, self.online = generate_or_load_wallet(cfg)
-        logger.info(f"Create {amount} new utxos")
+        super().__init__(cfg)
 
-    def create_new_utxos(self, amount: int):
-        try:
-            count = self.wallet.create_utxos(self.online, True, amount,
-                                            None, self.cfg.fee_rate)
-            if count > 0:
-                print(f'{count} new UTXOs created')
-        except rgb_lib.RgbLibError.AllocationsAlreadyAvailable:
-            pass
-        except rgb_lib.RgbLibError.InsufficientBitcoins as err:
-            print((f'Insufficient funds ({err.available} available sats).\n'
-                   f'Funds can be sent to the following address'),
-                  self.wallet.get_address())
-
-
-    def get_new_blinded_utxo(self):
-        try:
-            self.create_new_utxos(1)
-            print(self.cfg.transport_endpoints)
-            blind_data = self.wallet.blind_receive(None, None, None, self.cfg.transport_endpoints, 1)        
-            logger.info(f"New blinded utxo: {data}")
-            return data.recipient_id
-        except rgb_lib.RgbLibError as err:  # pylint: disable=catching-non-exception
-            print(f'Error generating blind data: {err}')
-            logger.error(err)
-            raise err
-
-    def get_address(self):
-        return self.wallet.get_address()
-
-    def get_assets(self):
-        assets = self.wallet.list_assets(filter_asset_schemas=[])
-        return assets.cfa
-
-    def refresh(self):
-        self.wallet.refresh(self.online, None, [])
-
-
+    def ask_mint(self):
+        pass
 
 
 def main():
