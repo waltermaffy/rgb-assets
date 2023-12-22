@@ -3,6 +3,7 @@ import os
 import uuid
 from dataclasses import dataclass
 from typing import List, Optional
+from rgb_assets.wallet_helper import logger
 
 import rgb_lib
 from pydantic import BaseModel
@@ -14,8 +15,9 @@ class NftDefinition(BaseModel):
     amounts: List[int] = [1]
     description: str = ""
     parent_id: Optional[str] = None
+    file_path: Optional[str] = None
     encoded_data: Optional[str] = None
-    file_type: str = "JPEG"
+    file_type: Optional[str] = "JPEG"
 
 
 class BlindedUxto(BaseModel):
@@ -23,6 +25,10 @@ class BlindedUxto(BaseModel):
 
 
 class MintRequest(BaseModel):
+    nft_definition: NftDefinition
+    blinded_utxo: str
+
+class SendRequest(BaseModel):
     asset_id: str
     blinded_utxo: str
 
@@ -48,7 +54,7 @@ class DataConverter:
     def decode_data(encoded_data: str, file_type: str, data_dir: str) -> Optional[str]:
         try:
             mint_folder = os.path.join(data_dir, "mint_data")
-            os.makedirs(mint_folder, exists=True)
+            os.makedirs(mint_folder, exist_ok=True) 
             decoded_data = base64.b64decode(encoded_data)
             file_name = f"{str(uuid.uuid4())}.{file_type.lower()}"
             file_path = os.path.join(mint_folder, file_name)

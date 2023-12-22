@@ -10,7 +10,7 @@ SUPPORTED_NETWORKS = {
     "regtest": rgb_lib.BitcoinNetwork.REGTEST,
     "testnet": rgb_lib.BitcoinNetwork.TESTNET,
 }
-
+LOG_PATH = "./data/test.log"
 
 def default_transport_endpoints():
     return os.getenv("TRANSPORT_ENDPOINTS", "rpc://proxy:3000/json-rpc").split(",")

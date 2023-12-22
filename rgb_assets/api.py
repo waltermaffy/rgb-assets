@@ -1,11 +1,9 @@
-from typing import Optional
-
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-
-from rgb_assets.config import get_config
+from typing import Optional
 from rgb_assets.minter import NftMintingService
-from rgb_assets.models import MintRequest, NftDefinition
+from rgb_assets.models import NftDefinition, MintRequest, SendRequest
+from rgb_assets.config import get_config
 
 app = FastAPI()
 cfg = get_config()
@@ -63,19 +61,27 @@ async def list_unspent():
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
 
-@app.post("/mint_nft")
+@app.post("/issue_nft")
 async def mint_nft(definition: NftDefinition):
     try:
-        asset_id = mint_service.mint_nft(definition)
+        asset_id = mint_service.issue_asset_cfa(definition)
         return {"message": f"NFT minted", "assset_id": asset_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
 
-@app.post("/send_nft")
-async def send_nft(mint_request: MintRequest):
+@app.post("/mint_nft")
+async def mint_nft(mint_request: MintRequest):
     try:
-        tx_id = mint_service.send_nft(mint_request.blinded_utxo, mint_request.asset_id)
+        tx_id = mint_service.mint_nft(mint_request.blinded_utxo, mint_request.nft_definition)
+        return {"message": "NFT sent", "tx_id": tx_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+
+@app.post("/send_nft")
+async def send_nft(send_request: SendRequest):
+    try:
+        tx_id = mint_service.send_nft(send_request.blinded_utxo, send_request.asset_id)
         return {"message": "NFT sent", "tx_id": tx_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")

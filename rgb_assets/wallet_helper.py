@@ -4,7 +4,7 @@ import os
 
 import rgb_lib
 
-from rgb_assets.config import SUPPORTED_NETWORKS, WalletConfig, check_config
+from rgb_assets.config import SUPPORTED_NETWORKS, LOG_PATH, WalletConfig, check_config
 
 
 def setup_logger(file_path: str = "app.log") -> logging.Logger:
@@ -26,6 +26,8 @@ def setup_logger(file_path: str = "app.log") -> logging.Logger:
     logger.addHandler(file_handler)
 
     return logger
+
+logger = setup_logger(LOG_PATH)
 
 
 def generate_or_load_wallet(cfg: WalletConfig):

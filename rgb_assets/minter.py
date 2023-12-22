@@ -7,10 +7,8 @@ import rgb_lib
 
 from rgb_assets.config import SUPPORTED_NETWORKS, WalletConfig, get_config
 from rgb_assets.models import DataConverter, NftDefinition, NftMint
-from rgb_assets.wallet_helper import generate_or_load_wallet, setup_logger
+from rgb_assets.wallet_helper import generate_or_load_wallet, logger
 from rgb_assets.wallet_service import WalletService
-
-logger = setup_logger("./data/minter.log")
 
 
 class NftMintingService(WalletService):
@@ -33,9 +31,10 @@ class NftMintingService(WalletService):
             logger.error(f"Error decoding JSON: {e}")
             return None
 
-    def mint_nft(self, nft_definition: NftDefinition) -> str:
+
+    def issue_asset_cfa(self, nft_definition: NftDefinition) -> str:
         try:
-            logger.info(f"Got NFT definition: {nft_definition}")
+            logger.info(f"Got NFT definition")
             encoded_data = nft_definition.encoded_data
             if encoded_data:
                 file_path = DataConverter.decode_data(
@@ -61,6 +60,17 @@ class NftMintingService(WalletService):
         except Exception as e:
             logger.error(e)
             raise Exception(e)
+
+    def mint_nft(
+        self, 
+        blinded_utxo: str,
+        nft_definition: NftDefinition, 
+    ) -> str:
+        # Issue an RGB asset and send it to the blinded UTXO provided
+        asset_id = self.issue_asset_cfa(nft_definition)
+        tx_id = self.send_nft(blinded_utxo, asset_id)
+        return tx_id
+
 
     def send_nft(
         self,

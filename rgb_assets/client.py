@@ -1,19 +1,28 @@
 import argparse
 
 from rgb_assets.config import WalletConfig
-from rgb_assets.models import NftDefinition
-from rgb_assets.wallet_helper import generate_or_load_wallet, setup_logger
+from rgb_assets.models import NftDefinition, MintRequest
+from rgb_assets.wallet_helper import generate_or_load_wallet, logger
 from rgb_assets.wallet_service import WalletService
-
-logger = setup_logger("./data/client.log")
+import requests
 
 
 class NftClient(WalletService):
-    def __init__(self, cfg: WalletConfig):
+    def __init__(self, cfg: WalletConfig, minter_url: str):
         super().__init__(cfg)
+        self.minter_url = minter_url
 
-    def ask_mint(self):
-        pass
+    def ask_mint(self, mint_request: MintRequest):
+        endpoint = f"{self.minter_url}/mint_nft"
+        data = {
+            "nft_definition": mint_request.nft_definition.dict(),
+            "blinded_utxo": mint_request.blinded_utxo
+        }
+        response = requests.post(endpoint, json=data)
+        result_mint = response.json()        
+        tx_id = result_mint.get("tx_id", None)
+        return tx_id
+
 
 
 def main():
