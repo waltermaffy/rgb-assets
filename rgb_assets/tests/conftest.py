@@ -5,7 +5,7 @@ from rgb_assets.minter import NftMintingService
 from rgb_assets.models import NftDefinition
 from rgb_assets.tests.utils import get_test_config
 from rgb_assets.wallet_service import WalletService
-
+from rgb_assets.client import NftClient
 
 @pytest.fixture
 def sample_config():
@@ -25,6 +25,14 @@ def minter():
     minter = NftMintingService(cfg)
     yield minter
 
+@pytest.fixture
+def client():
+    cfg = get_test_config()
+    cfg.wallet_name = "client"
+    minter_url = "http://localhost:8000"
+    client = NftClient(cfg, minter_url)
+    yield client
+
 
 @pytest.fixture
 def nft_demo():
@@ -33,6 +41,6 @@ def nft_demo():
         precision=0,
         amounts=[1],
         description="A new incredible collectible",
-        parent_id=None,
-        file_path=None,
-    )
+        encoded_data='',
+        file_type = 'JPEG'
+)

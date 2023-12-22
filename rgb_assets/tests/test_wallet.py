@@ -17,13 +17,13 @@ def test_get_address(wallet):
 
 
 def test_create_new_utxos(wallet):
-    fund_wallet(wallet)
+    #fund_wallet(wallet)
     count = wallet.create_new_utxos(2)
     assert count == 2
 
 
 def test_get_new_blinded_utxo(wallet):
-    fund_wallet(wallet)
+    #fund_wallet(wallet)
     blinded_utxo = wallet.get_new_blinded_utxo()
     assert blinded_utxo is not None
     assert type(blinded_utxo) == str
