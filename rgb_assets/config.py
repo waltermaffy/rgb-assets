@@ -5,6 +5,7 @@ from typing import List
 
 import rgb_lib
 from dotenv import load_dotenv
+import sys 
 
 SUPPORTED_NETWORKS = {
     "regtest": rgb_lib.BitcoinNetwork.REGTEST,
@@ -19,8 +20,8 @@ def default_transport_endpoints():
 @dataclass
 class WalletConfig:
     network: str = os.getenv("NET", "regtest")
-    init: bool = os.getenv("INIT", False)
-    wallet_name: str = os.getenv("WALLET_NAME", "rgb_wallet")
+    init: bool = os.getenv("INIT", True)
+    wallet_name: str = os.getenv("WALLET_NAME", "minter_wallet")
     data_dir: str = os.getenv("DATA_DIR", "./data/wallet")
     backup_pass: str = os.getenv("BACKUP_PASS", "password")
     electrum_url: str = os.getenv("ELECTRUM_URL", "tcp://electrs:50001")
@@ -28,7 +29,7 @@ class WalletConfig:
     transport_endpoints: List[str] = field(default_factory=default_transport_endpoints)
     fee_rate: float = float(os.getenv("FEE_RATE", "1.5"))
     vanilla_keychain: int = int(os.getenv("VANILLA_KEYCHAIN", "1"))
-    log_path: str = os.getenv("LOG_PATH", "/data/minter.log")
+    log_path: str = os.getenv("LOG_PATH", "./data/minter.log")
 
 
 def get_config():
@@ -37,14 +38,10 @@ def get_config():
 
 
 def check_config(cfg: WalletConfig):
-    if cfg.network not in SUPPORTED_NETWORKS:
-        print(f"Network not supported")
+    print(f"Checking config: {cfg}")
+    if not hasattr(rgb_lib.BitcoinNetwork, cfg.network.upper()):
+        print(f'unsupported Bitcoin network "{cfg.network}"')
         sys.exit(1)
 
     cfg.keys_path = os.path.join(cfg.data_dir, f"{cfg.wallet_name}.json")
     cfg.backup_path = os.path.join(cfg.data_dir, f"{cfg.wallet_name}.backup")
-    # Check if keys_path and backup path exists
-    if os.path.exists(cfg.keys_path) and os.path.exists(cfg.backup_path):
-        cfg.init = False
-    else:
-        cfg.init = True

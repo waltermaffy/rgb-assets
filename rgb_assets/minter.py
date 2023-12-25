@@ -1,4 +1,4 @@
-import argparse
+# import argparse
 import json
 import os
 from typing import Union
@@ -13,6 +13,7 @@ from rgb_assets.wallet_service import WalletService
 
 class NftMintingService(WalletService):
     def __init__(self, cfg: WalletConfig):
+        #logger.info("Running minter with cfg: ", cfg)
         super().__init__(cfg)
 
     def mint_nft_from_file(self, file_path: str) -> str:

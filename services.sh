@@ -51,6 +51,15 @@ start() {
     until $COMPOSE logs proxy |grep -q 'App is running at http://localhost:3000'; do
         sleep 1
     done
+    
+    # wait for minter to have completed startup
+    echo "Waiting for minter to be up"
+    until $COMPOSE logs minter | grep -q 'Application startup complete'; do
+        sleep 1
+    done
+    echo "Minter is up"
+
+    fund_minter
 
 }
 
@@ -76,9 +85,23 @@ mine() {
     $BCLI -rpcwallet=miner -generate "$blocks"
 }
 
+fund_minter() {
+
+    # Extracting the address from the response
+    echo "Retrieving the address to fund"
+    address=$(curl -X 'GET' 'http://localhost:8000/new_address' -H 'accept: application/json' | jq -r '.address')
+    if [ -z "$address" ]; then
+        _die "Failed to retrieve the address"
+    fi
+    echo "Address to fund: $address"
+    # Fund the provided address and mine
+    fund "$address"
+    mine
+}
+
 [ -n "$1" ] || _die "command required"
 case $1 in
-    build|start|stop|streamlit) "$1";;
+    build|start|stop|streamlit|fund_minter) "$1";;
     fund|mine) "$@";;
     *) _die "unrecognized command";;
 esac
