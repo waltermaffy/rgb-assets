@@ -28,6 +28,7 @@ class WalletService:
                 f"Insufficient funds ({err.available} available sats).\n"
                 f"Funds can be sent to the following address: {self.wallet.get_address()}"
             )
+            return None
 
     def get_new_blinded_utxo(self):
         try:

@@ -4,7 +4,7 @@ import os
 from typing import Union
 
 import rgb_lib
-
+import argparse
 from rgb_assets.config import SUPPORTED_NETWORKS, WalletConfig, get_config
 from rgb_assets.models import DataConverter, NftDefinition, NftMint
 from rgb_assets.wallet_helper import generate_or_load_wallet, logger
@@ -15,27 +15,28 @@ class NftMintingService(WalletService):
     def __init__(self, cfg: WalletConfig):
         #logger.info("Running minter with cfg: ", cfg)
         super().__init__(cfg)
+        self.mints = {}
 
-    def mint_nft_from_file(self, file_path: str) -> str:
-        nft_definition = self.load_nft_definition_from_file(file_path)
-        return self.mint_nft(nft_definition)
+    def issue_nft_from_file(self, file_path: str) -> str:
+        nft_definition = NftDefinition.from_file(file_path)
+        if not nft_definition:
+            raise Exception(f"Error loading NFT definition from file: {file_path}")
+        return self.issue_asset_cfa(nft_definition)
 
-    def load_nft_definition_from_file(file_path: str) -> Union[NftDefinition, None]:
-        try:
-            with open(file_path, "r") as file:
-                json_data = json.load(file)
-                return NftDefinition.parse_obj(json_data)
-        except FileNotFoundError:
-            logger.error(f"File '{file_path}' not found.")
-            return None
-        except json.JSONDecodeError as e:
-            logger.error(f"Error decoding JSON: {e}")
-            return None
-
-
+    def issue_nft_from_folder(self, folder_path: str) -> str:
+        nft_definitions = NftDefinition.from_folder(folder_path)
+        if not nft_definitions:
+            raise Exception(f"Error loading NFT definitions from folder: {folder_path}")
+        asset_ids = []
+        logger.info(f"Issuing #{len(nft_definitions)} NFTs from folder: {folder_path}")
+        for nft_definition in nft_definitions:
+            asset_id = self.issue_asset_cfa(nft_definition)
+            asset_ids.append(asset_id)
+        return asset_ids
+        
     def issue_asset_cfa(self, nft_definition: NftDefinition) -> str:
         try:
-            logger.info(f"Got NFT definition")
+            logger.info(f"Issuing NFT definition: {nft_definition}")
             encoded_data = nft_definition.encoded_data
             if encoded_data:
                 file_path = DataConverter.decode_data(
@@ -62,13 +63,30 @@ class NftMintingService(WalletService):
             logger.error(e)
             raise Exception(e)
 
+    def mint_nft_from_file(
+        self, blinded_utxo: str, file_path: str
+    ) -> str:
+        nft_definition = NftDefinition.from_file(file_path)
+        if not nft_definition:
+            raise Exception(f"Error loading NFT definition from file: {file_path}")
+        return self.mint_nft(blinded_utxo, nft_definition)
+
+
     def mint_nft(
         self, 
         blinded_utxo: str,
         nft_definition: NftDefinition, 
     ) -> str:
-        # Issue an RGB asset and send it to the blinded UTXO provided
+        # Issue an RGB asset and send it to the blinded UTXO provided, return txid
+        if not (rgb_lib.BlindedUtxo(blinded_utxo)):
+            return {
+                "message": f"Invalid blinded UTXO: {blinded_utxo}", 
+                "error": "InvalidBlindedUtxo"  
+            }
+
         asset_id = self.issue_asset_cfa(nft_definition)
+        if not asset_id:
+            raise Exception(f"Error issuing asset CFA: {nft_definition.name}")
         tx_id = self.send_nft(blinded_utxo, asset_id)
         return tx_id
 
@@ -99,48 +117,66 @@ class NftMintingService(WalletService):
 
 def main():
     parser = argparse.ArgumentParser(description="NFT Minting Service")
-    parser.add_argument(
-        "--definition", "-d", type=str, help="Path to the NFT definition file"
-    )
-    parser.add_argument(
-        "--blinded_utxo", "-b", type=str, help="Blinded UTXO where the NFT will be sent"
-    )
-    parser.add_argument(
-        "--data-dir",
-        "-dir",
-        type=str,
-        default="./data",
-        help="Directory to store wallet data",
-    )
-    parser.add_argument(
-        "--network",
-        "-n",
-        type=str,
-        choices=["regtest", "testnet"],
-        default="regtest",
-        help="Bitcoin network type",
-    )
-    args = parser.parse_args()
-    print(args)
-    cfg = get_config()
+    subparsers = parser.add_subparsers(dest='command', help='Available commands')
 
+    # Sub-parser for minting an NFT from a file
+    parser_mint = subparsers.add_parser('mint', help='Mint an NFT from a definition file or a folder')
+    parser_mint.add_argument('-d', '--definition', type=str, help='Path to the NFT definition file or folder')
+    parser_mint.add_argument('-b', '--blinded_utxo', type=str, help='Blinded UTXO where the NFT will be sent')
+
+    # Sub-parser for sending an NFT to a blinded UTXO
+    parser_send = subparsers.add_parser('send', help='Send an NFT to a blinded UTXO')
+    parser_send.add_argument('-a', '--asset_id', type=str, help='Asset id to send to the blinded UTXO')
+    parser_send.add_argument('-b', '--blinded_utxo', type=str, help='Blinded UTXO where the NFT will be sent')
+
+    parser.add_argument('--data-dir', '-dir', type=str, default='./data', help='Directory of the wallet data')
+    parser.add_argument('--network', '-n', type=str, choices=['regtest', 'testnet'], default='regtest',
+                        help='Bitcoin network type')
+    parser.add_argument(
+        "--init",
+        action="store_true",
+        default=False,
+        help="Initialize a new wallet",
+    )
+
+    args = parser.parse_args()
+
+    cfg = get_config()
     cfg.data_dir = args.data_dir
-    cfg.definition = args.definition
+    cfg.network = args.network
+    cfg.init = args.init
+    cfg.electrum_url="tcp://localhost:50001"
+    cfg.transport_endpoints=["rpc://localhost:3000/json-rpc"] 
+    cfg.data_dir = args.data_dir
     print(cfg)
 
     mint_service = NftMintingService(cfg)
 
     try:
-        # mint nft form definition file
-        asset_id = mint_service.mint_nft(args.definition)
-        print(f"NFT minted with asset ID: {asset_id}")
-        # send nft to blinded utxo
-        tx_id = mint_service.send_nft(args.blinded_utxo, asset_id)
-        print(f"NFT sent with txid: {tx_id}")
+        if args.command == 'mint':
+            # check if definition is a folder
+            if os.path.isdir(args.definition):
+                asset_ids = mint_service.issue_nft_from_folder(args.definition)
+                print(f"NFTs minted from folder: {args.definition}")
+                print(f"New asset IDs: {asset_ids}")
 
+            else:
+                if args.blinded_utxo:
+                    print(f"Minting NFT from file: {args.definition} to blinded UTXO: {args.blinded_utxo}")
+                    txid = mint_service.mint_nft_from_file(args.blinded_utxo, args.definition)
+                    print(f"NFT minted with txid: {txid}")
+                else:
+                    asset_id = mint_service.issue_nft_from_file(args.definition)
+                    print(f"NFT minted with asset ID: {asset_id}")
+                
+
+        elif args.command == 'send':
+            tx_id = mint_service.send_nft(args.blinded_utxo, args.asset_id)
+            print(f"NFT sent with txid: {tx_id}")
+        else:
+            parser.print_help()
     except Exception as e:
         print(f"Error: {e}")
-
 
 if __name__ == "__main__":
     main()

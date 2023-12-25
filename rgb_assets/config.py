@@ -38,7 +38,6 @@ def get_config():
 
 
 def check_config(cfg: WalletConfig):
-    print(f"Checking config: {cfg}")
     if not hasattr(rgb_lib.BitcoinNetwork, cfg.network.upper()):
         print(f'unsupported Bitcoin network "{cfg.network}"')
         sys.exit(1)

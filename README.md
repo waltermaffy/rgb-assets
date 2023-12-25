@@ -11,14 +11,9 @@ WARNING: This code is to be considered as NOT secure. It is NOT recommended to u
 ## Requirements
 Poetry, Docker and docker-compose are required to run this demo.
 
-
 ## Testing setup
-Build the app docker image with:
-```shell
-./services.sh build
-```
 
-Start regtest blockchain services along with app with:
+Start regtest blockchain services along with FastAPI app with:
 ```shell
 ./services.sh start
 ```
@@ -55,7 +50,26 @@ with:
 ```
 
 
-### ENPOINTS
+## CLI 
+After the containers rum in the background you can start issuing new RGB CFA assets and send them to a blinded_utxo. If a blinded_uxto is not provided their are issued to the minter wallet. 
+It is also possible to sends assets from the minter wallet to a new blinded_utxo
+
+- MINT a new RGB asset based on a json file
+```shell
+poetry run python -m rgb_assets.minter mint -d rgb_assets/tests/data/nft_definition.json 
+```
+
+- MINT new RGB assets from a folder
+```shell
+poetry run python -m rgb_assets.minter mint -d rgb_assets/tests/data/ 
+```
+
+- MINT RGB assets from a folder and send it to a blinded utxo
+```shell
+poetry run python -m rgb_assets.minter mint -d rgb_assets/tests/data/ -b utxob:MGhM2x9-AccWrjNjm-XVCpaGhF7-gdk51ZpmY-ANtqMLBKJ-hKaiKU
+```
+
+### API ENPOINTS
 - GET /cfa_assets --> get minted assets of minter wallet
 - GET /new_address --> get a new address to fund minter wallet 
 - GET /new_blinded_utxo --> get a new blinded UTXO (wallet must be funded)
@@ -65,6 +79,23 @@ with:
 - POST  /send_nft --> Send an alredy minted NFT to a blinded UTXO
 
 
+## NFT Definition 
+<!--  -->
+When you want to create a new mint, you should provide a NFT Definition. It should have the following format.
+
+```
+class NftDefinition(BaseModel):
+    name: str
+    precision: int = 0
+    amounts: List[int] = [1]
+    description: str = ""
+    parent_id: Optional[str] = None
+    file_path: Optional[str] = None
+    encoded_data: Optional[str] = None
+    file_type: Optional[str] = "JPEG"
+
+
+```
 ## Configuration
 In order to provide your conf to the minter you can create a default .env file
 
@@ -89,8 +120,9 @@ If you want to load an existing wallet provide in .env :
 In the future the keys file may be encryped with BACKUP_PASS
 
 
-## Possible future improvements
+## TODO List:
 - [ ] Add a database (SQLite/Mongo)
+- [ ] L402 for paid mint requests
 - [ ] Refined error hanlding
 - [ ] Request Validation
 - [ ] Add response model for consistent output
