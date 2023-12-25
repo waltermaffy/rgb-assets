@@ -18,10 +18,14 @@ class NftClient(WalletService):
             "nft_definition": mint_request.nft_definition.dict(),
             "blinded_utxo": mint_request.blinded_utxo
         }
-        response = requests.post(endpoint, json=data)
-        result_mint = response.json()        
-        tx_id = result_mint.get("tx_id", None)
-        return tx_id
+        try:
+            response = requests.post(endpoint, json=data)
+            result_mint = response.json()        
+            tx_id = result_mint.get("tx_id")
+            return tx_id
+        except Exception as e:
+            logger.error(f"Error making request to the minter API: {e}")
+            raise e
 
 
 

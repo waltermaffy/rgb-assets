@@ -9,8 +9,6 @@ class WalletService:
     def __init__(self, cfg: WalletConfig):
         self.cfg = cfg
         self.wallet, self.online = generate_or_load_wallet(cfg)
-        # Fund wallet if regtest
-        self.fund_wallet()
 
     def get_address(self):
         return self.wallet.get_address()
@@ -56,12 +54,3 @@ class WalletService:
         self.refresh()
         return self.wallet.list_unspents(self.online, settled_only=False)
 
-    def fund_wallet(self):
-        try:
-            if self.cfg.network == "regtest":
-                address = self.get_address()
-                os.system(f"./services.sh fund {address}")
-                os.system(f"./services.sh mine")
-        except Exception as e:
-            print(e)
-            

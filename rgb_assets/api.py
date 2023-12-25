@@ -7,7 +7,6 @@ from rgb_assets.config import get_config
 
 app = FastAPI()
 cfg = get_config()
-print("Running app with cfg: ", cfg)
 mint_service = NftMintingService(cfg)
 
 

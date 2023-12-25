@@ -32,10 +32,6 @@ logger = setup_logger(LOG_PATH)
 
 def generate_or_load_wallet(cfg: WalletConfig):
     check_config(cfg)
-
-    if not hasattr(rgb_lib.BitcoinNetwork, cfg.network.upper()):
-        print(f'unsupported Bitcoin network "{cfg.network}"')
-        sys.exit(1)
     bitcoin_network = getattr(rgb_lib.BitcoinNetwork, cfg.network.upper())
 
     if cfg.init:
