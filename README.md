@@ -64,9 +64,14 @@ poetry run python -m rgb_assets.minter mint -d rgb_assets/tests/data/nft_definit
 poetry run python -m rgb_assets.minter mint -d rgb_assets/tests/data/ 
 ```
 
-- MINT RGB assets from a folder and send it to a blinded utxo
+- MINT RGB assets from a file and send it to a blinded utxo
 ```shell
-poetry run python -m rgb_assets.minter mint -d rgb_assets/tests/data/ -b utxob:MGhM2x9-AccWrjNjm-XVCpaGhF7-gdk51ZpmY-ANtqMLBKJ-hKaiKU
+poetry run python -m rgb_assets.minter mint -d rgb_assets/tests/data/nft_definition.json  -b utxob:MGhM2x9-AccWrjNjm-XVCpaGhF7-gdk51ZpmY-ANtqMLBKJ-hKaiKU
+```
+
+- SEND RGB assets to a blinded utxo
+```shell
+poetry run python -m rgb_assets.minter  send -a rgb:21e9Mer-tBuZY42LF-Z6RtgW7aJ-JnTPuJTt4-csvejq4a3-LUoJsYj -b utxob:DASV5L2-vV8j6EGSn-B7WutZ86W-LBm5PcDWo-wov61mJcs-ewon83
 ```
 
 ### API ENPOINTS
