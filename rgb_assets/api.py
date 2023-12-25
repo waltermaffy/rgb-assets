@@ -60,20 +60,21 @@ async def list_unspent():
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
 
-@app.post("/issue_nft")
-async def mint_nft(definition: NftDefinition):
+@app.post("/issue_cfa")
+async def issue_cfa(definition: NftDefinition):
     try:
         asset_id = mint_service.issue_asset_cfa(definition)
-        return {"message": f"NFT minted", "assset_id": asset_id}
+        return {"message": f"Issued new CFA asset", "assset_id": asset_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
+# TODO: (Better naming should be defined) CFA --> NFT 
 
 @app.post("/mint_nft")
 async def mint_nft(mint_request: MintRequest):
     try:
         tx_id = mint_service.mint_nft(mint_request.blinded_utxo, mint_request.nft_definition)
-        return {"message": "NFT sent", "tx_id": tx_id}
+        return {"message": "NFT minted and sent", "tx_id": tx_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 

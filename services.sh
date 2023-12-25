@@ -86,7 +86,6 @@ mine() {
 }
 
 fund_minter() {
-
     # Extracting the address from the response
     echo "Retrieving the address to fund"
     address=$(curl -X 'GET' 'http://localhost:8000/new_address' -H 'accept: application/json' | jq -r '.address')

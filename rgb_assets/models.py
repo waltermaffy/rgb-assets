@@ -7,7 +7,7 @@ from rgb_assets.wallet_helper import logger
 
 import rgb_lib
 from pydantic import BaseModel
-
+import json 
 
 class NftDefinition(BaseModel):
     name: str
@@ -18,6 +18,34 @@ class NftDefinition(BaseModel):
     file_path: Optional[str] = None
     encoded_data: Optional[str] = None
     file_type: Optional[str] = "JPEG"
+
+    @staticmethod
+    def from_file(file_path: str) -> "NftDefinition":
+        try:
+            with open(file_path, "r") as file:
+                json_data = json.load(file)
+                return NftDefinition.parse_obj(json_data)
+        except FileNotFoundError:
+            logger.error(f"File '{file_path}' not found.")
+            return None
+        except json.JSONDecodeError as e:
+            logger.error(f"Error decoding JSON: {e}")
+            return None
+
+    def to_file(self, file_path: str):
+        with open(file_path, "w") as file:
+            json.dump(self.dict(), file, indent=4)
+    
+    @staticmethod
+    def from_folder(folder_path: str) -> List["NftDefinition"]:
+        definitions = []
+        for file_name in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, file_name)
+            if os.path.isfile(file_path) and file_path.endswith('.json'):
+                definition = NftDefinition.from_file(file_path)
+                if definition:
+                    definitions.append(definition)
+        return definitions
 
 
 class BlindedUxto(BaseModel):
@@ -37,6 +65,7 @@ class NftMint(BaseModel):
     asset: NftDefinition
     blinded_utxo: BlindedUxto
     txid: str = ""
+    created_at: str = ""
 
 
 class DataConverter:

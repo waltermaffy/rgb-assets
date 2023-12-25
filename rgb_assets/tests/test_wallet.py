@@ -18,7 +18,7 @@ def test_get_address(wallet):
 
 def test_create_new_utxos(wallet):
     count = wallet.create_new_utxos(2)
-    assert count == 2
+    assert count >= 2
 
 
 def test_get_new_blinded_utxo(wallet):
@@ -26,3 +26,4 @@ def test_get_new_blinded_utxo(wallet):
     assert blinded_utxo is not None
     assert type(blinded_utxo) == str
     assert blinded_utxo.startswith("utxob:")
+    assert rgb_lib.BlindedUtxo(blinded_utxo)

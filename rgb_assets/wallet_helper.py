@@ -42,7 +42,7 @@ def generate_or_load_wallet(cfg: WalletConfig):
         print("Loading existing wallet..")
         keys = load_keys(cfg.keys_path, bitcoin_network)
         rgb_lib.restore_backup(cfg.backup_path, cfg.backup_pass, cfg.data_dir)
-        print("restore complete")
+        print("Restore complete!")
 
     wallet_data = rgb_lib.WalletData(
         cfg.data_dir,
