@@ -1,0 +1,8 @@
+{
+    "name": "RGB-02",
+    "precision": 0,
+    "amounts": [1],
+    "description": "Another new incredible collectible",
+    "parent_id": null,
+    "file_path": "rgb_assets/tests/data/sample.png"
+}
