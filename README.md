@@ -1,6 +1,6 @@
 # RGB Assets 
 
-A framework for testing issues and transfers of [RGB](rgb.info) assets over Bitcoin.
+A framework for testing mints and transfers of [RGB](rgb.info) assets over Bitcoin.
 
 Using [rgb-lib-python](https://github.com/RGB-Tools/rgb-lib-python/tree/master) this library provides a FastAPI app for a NFT Minter and a streamlit web interface for a client.
 Both minter and client use a WalletService for RGB wallet functionalities. 
