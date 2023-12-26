@@ -2,7 +2,11 @@
 
 A framework for testing mints and transfers of [RGB](rgb.info) assets over Bitcoin.
 
-Using [rgb-lib-python](https://github.com/RGB-Tools/rgb-lib-python/tree/master) this library provides a FastAPI app for a NFT Minter and a streamlit web interface for a client.
+Using [rgb-lib-python](https://github.com/RGB-Tools/rgb-lib-python/tree/master) this library provides:
+- A FastAPI app with api for minting and sending CFA assets (NFT)
+- A streamlit web interface for a client RGB wallet.
+- CLI to mint NFTs from files
+- 
 Both minter and client use a WalletService for RGB wallet functionalities. 
 
 
@@ -20,7 +24,7 @@ Start regtest blockchain services along with FastAPI app with:
 
 The app should listen on port 8000 for requests. You can see and test enpoints here [http://localhost:8000/docs](http://localhost:8000/docs) 
 
-Run tests for wallet and minter
+Run tests with pytest
 ```shell
 poetry run pytest
 ```
@@ -32,15 +36,24 @@ Start streamlit page for client
 
 The streamlit frontend should listen on port 8501 . Open your browser at [http://localhost:8501](http://localhost:8501)
 
+The user can load an image and a mint request will be sent to the minter api. 
 
-Once services are running, a regtest bitcoin address can be funded from the
-console with:
+The MintRequest will have a NFT Definition and a blindend utxo. 
+
+In order to get a blinded utxo from the wallet, some funds are needed. 
+
+
+You can use these scritps in regtest, to fund a bitcoin address and mine some bitcoin:
 ```shell
 ./services.sh fund <bitcoin_address>
 ```
-and a regtest block can be mined with:
 ```shell
 ./services.sh mine <number_of_blocks>
+```
+
+If loading a new wallet, use this command to give some funds to the minter
+```shell
+./services.sh fund_minter
 ```
 
 Once done with testing, stop all services (this will also delete all data produced by services)
@@ -49,10 +62,12 @@ with:
 ./services.sh stop
 ```
 
-
 ## CLI 
-After the containers rum in the background you can start issuing new RGB CFA assets and send them to a blinded_utxo. If a blinded_uxto is not provided their are issued to the minter wallet. 
-It is also possible to sends assets from the minter wallet to a new blinded_utxo
+After the containers rum in the background you can start issuing new RGB CFA assets and send them to a blinded_utxo. 
+
+If a blinded_uxto is not provided their are issued to the minter wallet. 
+
+It is also possible to sends assets from the minter wallet to a new blinded_utxo using "send".
 
 - MINT a new RGB asset based on a json file
 ```shell
@@ -79,28 +94,27 @@ poetry run python -m rgb_assets.minter  send -a rgb:21e9Mer-tBuZY42LF-Z6RtgW7aJ-
 - GET /new_address --> get a new address to fund minter wallet 
 - GET /new_blinded_utxo --> get a new blinded UTXO (wallet must be funded)
 - GET /list_unspent --> get a list of UTXOs
-- POST  /issue_nft --> Issue a new NFT based on a NftDefinition
+- POST  /issue_cfa --> Issue a new NFT based on a NftDefinition
 - POST  /mint_nft --> Issue a new NFT based on a NftDefinition and send it to a blinded UTXO
 - POST  /send_nft --> Send an alredy minted NFT to a blinded UTXO
 
 
 ## NFT Definition 
 <!--  -->
-When you want to create a new mint, you should provide a NFT Definition. It should have the following format.
+When you want to create a new mint, you should provide a NFT Definition. 
+It should be a JSON file with the following format.
+```
+{
+    "name": "RGB-01",
+    "precision": 0,
+    "amounts": [1],
+    "description": "A new incredible collectible",
+    "parent_id": null,
+    "file_path": null
+}
 
 ```
-class NftDefinition(BaseModel):
-    name: str
-    precision: int = 0
-    amounts: List[int] = [1]
-    description: str = ""
-    parent_id: Optional[str] = None
-    file_path: Optional[str] = None
-    encoded_data: Optional[str] = None
-    file_type: Optional[str] = "JPEG"
 
-
-```
 ## Configuration
 In order to provide your conf to the minter you can create a default .env file
 
