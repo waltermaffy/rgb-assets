@@ -1,49 +1,41 @@
-# RGB Assets 
+# RGB Assets
 
-A framework for testing mints and transfers of [RGB](rgb.info) assets over Bitcoin.
+RGB Assets is a framework designed for testing the minting and transfers of [RGB](rgb.info) assets over the Bitcoin network. Leveraging [rgb-lib-python](https://github.com/RGB-Tools/rgb-lib-python/tree/master), this library offers the following functionalities:
 
-Using [rgb-lib-python](https://github.com/RGB-Tools/rgb-lib-python/tree/master) this library provides:
-- A FastAPI app with api for minting and sending CFA assets (NFT)
-- A streamlit web interface for a client RGB wallet.
-- CLI to mint NFTs from files
-- 
-Both minter and client use a WalletService for RGB wallet functionalities. 
+- A FastAPI application with an API for minting and sending CFA assets (NFTs).
+- A Streamlit web interface serving as a client RGB wallet.
+- Command-line interface (CLI) for minting NFTs from files.
 
-
-WARNING: This code is to be considered as NOT secure. It is NOT recommended to use it in mainnet 
+⚠️ **WARNING: This code is not intended for use in the mainnet and should not be considered secure. Exercise caution while using it.**
 
 ## Requirements
-Poetry, Docker and docker-compose are required to run this demo.
 
-## Testing setup
+Running this demo requires Poetry, Docker, and docker-compose.
 
-Start regtest blockchain services along with FastAPI app with:
+## Testing Setup
+
+Initiate the regtest blockchain services along with the FastAPI app using the provided script:
 ```shell
 ./services.sh start
 ```
 
-The app should listen on port 8000 for requests. You can see and test enpoints here [http://localhost:8000/docs](http://localhost:8000/docs) 
+The app should be accessible on port 8000. Explore and test the endpoints here: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-Run tests with pytest
+Execute tests using pytest:
 ```shell
 poetry run pytest
 ```
 
-Start streamlit page for client
+Launch the Streamlit page for the client:
 ```shell
 ./services.sh streamlit
 ```
 
-The streamlit frontend should listen on port 8501 . Open your browser at [http://localhost:8501](http://localhost:8501)
+The Streamlit frontend should be available on port 8501. Open your browser at [http://localhost:8501](http://localhost:8501). Users can load an image, triggering a mint request sent to the minter API.
 
-The user can load an image and a mint request will be sent to the minter api. 
+The MintRequest comprises a NFT Definition and a blinded UTXO. To obtain a blinded UTXO from the wallet, ensure sufficient funds are available.
 
-The MintRequest will have a NFT Definition and a blindend utxo. 
-
-In order to get a blinded utxo from the wallet, some funds are needed. 
-
-
-You can use these scritps in regtest, to fund a bitcoin address and mine some bitcoin:
+To fund a Bitcoin address and mine some Bitcoin in the regtest environment, use these scripts:
 ```shell
 ./services.sh fund <bitcoin_address>
 ```
@@ -51,59 +43,56 @@ You can use these scritps in regtest, to fund a bitcoin address and mine some bi
 ./services.sh mine <number_of_blocks>
 ```
 
-If loading a new wallet, use this command to give some funds to the minter
+For loading a new wallet, allocate funds to the minter using this command:
 ```shell
 ./services.sh fund_minter
 ```
 
-Once done with testing, stop all services (this will also delete all data produced by services)
-with:
+Upon completion of testing, stop all services (this will delete all produced data) using:
 ```shell
 ./services.sh stop
 ```
 
-## CLI 
-After the containers rum in the background you can start issuing new RGB CFA assets and send them to a blinded_utxo. 
+## CLI
 
-If a blinded_uxto is not provided their are issued to the minter wallet. 
+Once the containers are running in the background, you can issue new RGB CFA assets and send them to a blinded UTXO. If a blinded UTXO is not provided, assets are issued to the minter wallet.
 
-It is also possible to sends assets from the minter wallet to a new blinded_utxo using "send".
+Additionally, you can send assets from the minter wallet to a new blinded UTXO using "send".
 
-- MINT a new RGB asset based on a json file
+- **MINT** a new RGB asset based on a JSON file:
 ```shell
 poetry run python -m rgb_assets.minter mint -d rgb_assets/tests/data/nft_definition.json 
 ```
 
-- MINT new RGB assets from a folder
+- **MINT** new RGB assets from a folder:
 ```shell
-poetry run python -m rgb_assets.minter mint -d rgb_assets/tests/data/ 
+poetry run python -m rgb_assets.minter mint -d rgb_assets/tests/data/
 ```
 
-- MINT RGB assets from a file and send it to a blinded utxo
+- **MINT** RGB assets from a file and send them to a blinded UTXO:
 ```shell
-poetry run python -m rgb_assets.minter mint -d rgb_assets/tests/data/nft_definition.json  -b utxob:MGhM2x9-AccWrjNjm-XVCpaGhF7-gdk51ZpmY-ANtqMLBKJ-hKaiKU
+poetry run python -m rgb_assets.minter mint -d rgb_assets/tests/data/nft_definition.json -b utxob:MGhM2x9-AccWrjNjm-XVCpaGhF7-gdk51ZpmY-ANtqMLBKJ-hKaiKU
 ```
 
-- SEND RGB assets to a blinded utxo
+- **SEND** RGB assets to a blinded UTXO:
 ```shell
-poetry run python -m rgb_assets.minter  send -a rgb:21e9Mer-tBuZY42LF-Z6RtgW7aJ-JnTPuJTt4-csvejq4a3-LUoJsYj -b utxob:DASV5L2-vV8j6EGSn-B7WutZ86W-LBm5PcDWo-wov61mJcs-ewon83
+poetry run python -m rgb_assets.minter send -a rgb:21e9Mer-tBuZY42LF-Z6RtgW7aJ-JnTPuJTt4-csvejq4a3-LUoJsYj -b utxob:DASV5L2-vV8j6EGSn-B7WutZ86W-LBm5PcDWo-wov61mJcs-ewon83
 ```
 
-### API ENPOINTS
-- GET /cfa_assets --> get minted assets of minter wallet
-- GET /new_address --> get a new address to fund minter wallet 
-- GET /new_blinded_utxo --> get a new blinded UTXO (wallet must be funded)
-- GET /list_unspent --> get a list of UTXOs
-- POST  /issue_cfa --> Issue a new NFT based on a NftDefinition
-- POST  /mint_nft --> Issue a new NFT based on a NftDefinition and send it to a blinded UTXO
-- POST  /send_nft --> Send an alredy minted NFT to a blinded UTXO
+### API Endpoints
 
+- **GET /cfa_assets:** Retrieve minted assets of the minter wallet.
+- **GET /new_address:** Obtain a new address to fund the minter wallet.
+- **GET /new_blinded_utxo:** Get a new blinded UTXO (wallet must be funded).
+- **GET /list_unspent:** Fetch a list of UTXOs.
+- **POST /issue_cfa:** Issue a new NFT based on a NftDefinition.
+- **POST /mint_nft:** Issue a new NFT based on a NftDefinition and send it to a blinded UTXO.
+- **POST /send_nft:** Send an already minted NFT to a blinded UTXO.
 
-## NFT Definition 
-<!--  -->
-When you want to create a new mint, you should provide a NFT Definition. 
-It should be a JSON file with the following format.
-```
+## NFT Definition
+
+When creating a new mint, provide a NFT Definition in a JSON file with the following format:
+```json
 {
     "name": "RGB-01",
     "precision": 0,
@@ -112,37 +101,42 @@ It should be a JSON file with the following format.
     "parent_id": null,
     "file_path": null
 }
-
 ```
 
 ## Configuration
-In order to provide your conf to the minter you can create a default .env file
 
+To provide your configuration to the minter, create a default `.env` file:
+```shell
 mv .env.example .env
+```
 
-Modify it with your needs.
-
+Modify it as per your requirements.
 
 ### Wallet Settings
-If the following are not provided, a new wallet will be created. 
 
-If you want to load an existing wallet provide in .env :
-- WALLET_NAME.backup file inside DATA_DIR
-- WALLET_NAME_keys.json file inside DATA_DIR, with this structure:
+If not provided, a new wallet will be created. To load an existing wallet, provide in `.env`:
+
+- **WALLET_NAME.backup** file inside DATA_DIR.
+- **WALLET_NAME_keys.json** file inside DATA_DIR, structured as:
+```json
 {
-    "mnemonic": keys.mnemonic,
-    "xpub": keys.xpub,
-    "xpub_fingerprint": keys.xpub_fingerprint,
+    "mnemonic": "keys.mnemonic",
+    "xpub": "keys.xpub",
+    "xpub_fingerprint": "keys.xpub_fingerprint"
 }
-- password of the wallet backup in BACKUP_PASS
+```
+- Password of the wallet backup in BACKUP_PASS.
 
-In the future the keys file may be encryped with BACKUP_PASS
 
+## TODO List
 
-## TODO List:
-- [ ] Add a database (SQLite/Mongo)
-- [ ] L402 for paid mint requests
-- [ ] Refined error hanlding
-- [ ] Request Validation
-- [ ] Add response model for consistent output
-- [ ] Improved testing
+- [ ] Add a database (SQLite/Mongo).
+- [ ] L402 for paid mint requests.
+- [ ] Refined error handling.
+- [ ] Request validation.
+- [ ] Add a response model for consistent output.
+- [ ] Improved testing.
+
+---
+
+This revised README aims to provide clearer instructions and improve readability for users or developers accessing and using the RGB Assets framework. Adjustments were made for better organization and clarity in each section.
