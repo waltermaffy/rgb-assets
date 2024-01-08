@@ -136,7 +136,3 @@ If not provided, a new wallet will be created. To load an existing wallet, provi
 - [ ] Request validation.
 - [ ] Add a response model for consistent output.
 - [ ] Improved testing.
-
----
-
-This revised README aims to provide clearer instructions and improve readability for users or developers accessing and using the RGB Assets framework. Adjustments were made for better organization and clarity in each section.
